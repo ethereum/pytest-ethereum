@@ -1,7 +1,7 @@
-<PROJECT_NAME>
+pytest-ethereum
 ==============================
 
-<SHORT_DESCRIPTION>
+Pytest library for ethereum projects.
 
 Contents
 --------
@@ -9,7 +9,7 @@ Contents
 .. toctree::
     :maxdepth: 3
 
-    <MODULE_NAME>
+    pytest_ethereum
     releases
 
 

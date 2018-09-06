@@ -1,6 +1,6 @@
-<MODULE_NAME>
-<PYPI_NAME>
-<REPO_NAME>
-<RTD_NAME>
-<PROJECT_NAME>
-<SHORT_DESCRIPTION>
+pytest_ethereum
+pytest-ethereum
+pytest-ethereum
+pytest-ethereum
+pytest-ethereum
+Pytest library for ethereum projects.
