@@ -36,22 +36,25 @@ extras_require['dev'] = (
 )
 
 setup(
-    name='<PYPI_NAME>',
+    name='pytest-ethereum',
     # *IMPORTANT*: Don't manually change the version here. Use `make bump`, as described in readme
     version='0.1.0-alpha.0',
-    description="""<PYPI_NAME>: <SHORT_DESCRIPTION>""",
+    description="""pytest-ethereum: Pytest library for ethereum projects.""",
     long_description_markdown_filename='README.md',
     author='Jason Carver',
     author_email='ethcalibur+pip@gmail.com',
-    url='https://github.com/ethereum/<REPO_NAME>',
+    url='https://github.com/ethereum/pytest-ethereum',
     include_package_data=True,
     install_requires=[
         "eth-utils>=1,<2",
+        "web3[tester]==4.4.1",
+        "vyper",
     ],
     setup_requires=['setuptools-markdown'],
     python_requires='>=3.5, <4',
     extras_require=extras_require,
-    py_modules=['<MODULE_NAME>'],
+    entry_points={"pytest11": ["pytest_ethereum = pytest_ethereum.plugins"]},
+    py_modules=['pytest_ethereum'],
     license="MIT",
     zip_safe=False,
     keywords='ethereum',

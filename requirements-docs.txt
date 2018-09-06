@@ -1,1 +1,1 @@
-<PYPI_NAME>[doc]
+pytest-ethereum[doc]
