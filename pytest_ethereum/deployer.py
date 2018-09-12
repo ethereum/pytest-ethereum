@@ -11,11 +11,10 @@ class Deployer:
             )
         self.package = package
 
-    def deploy(self, package_name):
-        factory = self.package.get_contract_factory(package_name)
-        tx_hash = factory.constructor().transact()
+    def deploy(self, contract_type, *args):
+        factory = self.package.get_contract_factory(contract_type)
+        if factory.has_linkable_bytecode():
+            raise TypeError("don't support link refs yet.")
+        tx_hash = factory.constructor(*args).transact()
         tx_receipt = self.package.w3.eth.waitForTransactionReceipt(tx_hash)
-        contract_instance = self.package.w3.eth.contract(
-            address=to_canonical_address(tx_receipt.contractAddress), abi=factory.abi
-        )
-        return contract_instance
+        return self.package, to_canonical_address(tx_receipt.contractAddress)

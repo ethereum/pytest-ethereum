@@ -44,15 +44,15 @@ def manifest():
 @to_tuple
 def generate_inline_sources(compiler_output):
     for path in compiler_output.keys():
-        contract_name = path.split(":")[1]
-        yield b.inline_source(contract_name, compiler_output)
+        contract_type = path.split("/")[-1].split(".")[0]
+        yield b.inline_source(contract_type, compiler_output)
 
 
 @to_tuple
 def generate_contract_types(compiler_output):
     for path in compiler_output.keys():
-        contract_name = path.split(":")[1]
-        yield b.contract_type(contract_name, compiler_output)
+        contract_type = path.split("/")[-1].split(".")[0]
+        yield b.contract_type(contract_type, compiler_output)
 
 
 @to_dict
@@ -60,17 +60,19 @@ def generate_compiler_output(all_sources):
     for source in all_sources:
         contract_file = str(source).split("/")[-1]
         contract_type = contract_file.split(".")[0]
-        yield "{0}:{1}".format(source, contract_type), create_raw_asset_data(
-            source.read_text()
-        )
+        # todo fix to accomodate multiple types in a single contract file
+        yield str(source), {contract_type: create_raw_asset_data(source.read_text())}
 
 
 def create_raw_asset_data(source: Path):
     return {
-        "abi": json.dumps(compiler.mk_full_signature(source)),
-        "bin": to_hex(compiler.compile(source)),
-        "bin_runtime": to_hex(compiler.compile(source, bytecode_runtime=True)),
-        "devdoc": "{}",
+        "abi": compiler.mk_full_signature(source),
+        "evm": {
+            "bytecode": {
+                "object": to_hex(compiler.compile(source)),
+                "linkReferences": {},
+            }
+        },
     }
 
 
@@ -79,6 +81,17 @@ def package(manifest, w3):
     return Package(manifest, w3)
 
 
+# todo squash deployers
 @pytest.fixture
-def deployer(package):
+def vy_deployer(package):
     return Deployer(package)
+
+
+@pytest.fixture
+def solc_deployer(w3):
+    def _solc_deployer(path):
+        manifest = json.loads(path.read_text())
+        package = Package(manifest, w3)
+        return Deployer(package)
+
+    return _solc_deployer
