@@ -1,11 +1,12 @@
 import logging
 from pathlib import Path
 
-from eth_utils import is_address, to_canonical_address
+from eth_utils import is_address
 import pytest
 import web3
 
 from pytest_ethereum.deployer import Deployer
+from pytest_ethereum.exceptions import DeployerError
 
 logging.getLogger("evm").setLevel(logging.INFO)
 
@@ -44,7 +45,7 @@ def test_user_code_with_fixture(vyper_project_dir, greeter, registry):
     assert greeting == b"Hello"
 
 
-MANIFEST_DIR = Path(__file__).parent
+MANIFEST_DIR = Path(__file__).parent.parent / "manifests"
 
 #
 # Solidity Compiler Output
@@ -103,21 +104,5 @@ def escrow_deployer(solc_deployer, w3):
 
 def test_escrow_deployer_unlinked(escrow_deployer):
     deployer, w3 = escrow_deployer
-    with pytest.raises(TypeError):
+    with pytest.raises(DeployerError):
         deployer.deploy("Escrow", w3.eth.accounts[0])
-
-
-def test_escrow_deployer_linked(escrow_deployer):
-    deployer, w3 = escrow_deployer
-    escrow_package = deployer.package
-    escrow_factory = escrow_package.get_contract_factory("Escrow")
-    safe_send_factory = escrow_package.get_contract_factory("SafeSendLib")
-    safe_send_tx_hash = safe_send_factory.constructor().transact()
-    safe_send_tx_receipt = w3.eth.waitForTransactionReceipt(safe_send_tx_hash)
-    safe_send_address = to_canonical_address(safe_send_tx_receipt.contractAddress)
-    linked_escrow_factory = escrow_factory.link_bytecode(
-        {"SafeSendLib": safe_send_address}
-    )
-    escrow_tx_hash = linked_escrow_factory.constructor(w3.eth.accounts[0]).transact()
-    tx_receipt = w3.eth.waitForTransactionReceipt(escrow_tx_hash)
-    assert is_address(tx_receipt.contractAddress)
