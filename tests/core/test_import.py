@@ -1,4 +1,2 @@
-
-
 def test_import():
-    import <MODULE_NAME>  # noqa: F401
+    import pytest_ethereum  # noqa: F401

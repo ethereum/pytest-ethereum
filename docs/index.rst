@@ -9,7 +9,7 @@ Contents
 .. toctree::
     :maxdepth: 3
 
-    pytest_ethereum
+    overview
     releases
 
 
