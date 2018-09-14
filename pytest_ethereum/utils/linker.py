@@ -1,0 +1,104 @@
+from eth_utils import to_canonical_address, to_hex
+from eth_utils.toolz import assoc, assoc_in, dissoc
+
+from ethpm.utils.chains import (
+    check_if_chain_matches_chain_uri,
+    create_block_uri,
+    get_chain_id,
+)
+from pytest_ethereum.exceptions import LinkerError
+
+
+def pluck_matching_uri(deployment_data, w3):
+    """
+    Return any blockchain uri that matches w3-connected chain, if one
+    is present in the deployment data keys.
+    """
+    for uri in deployment_data.keys():
+        if check_if_chain_matches_chain_uri(w3, uri):
+            return uri
+    raise LinkerError(
+        "No matching blockchain URI found in deployment_data: {0}, for w3 instance: {1}.".format(
+            list(deployment_data.keys()), w3.__repr__()
+        )
+    )
+
+
+def contains_matching_uri(deployment_data, w3):
+    """
+    Returns true if any blockchain uri in deployment data matches
+    w3-connected chain.
+    """
+    for uri in deployment_data.keys():
+        if check_if_chain_matches_chain_uri(w3, uri):
+            return True
+    return False
+
+
+def create_latest_block_uri(w3, tx_receipt):
+    """
+    Creates a new block uri from data in w3 and provided tx_receipt.
+    """
+    chain_id = to_hex(get_chain_id(w3))
+    block_hash = to_hex(tx_receipt.blockHash)
+    return create_block_uri(chain_id, block_hash)
+
+
+def insert_deployment(package, deployment_name, deployment_data, latest_block_uri):
+    """
+    Returns a new manifest. If a matching chain uri is found in the old manifest, it will
+    update the chain uri along with the new deployment data. If no match, it will simply add
+    the new chain uri and deployment data.
+    """
+    old_deployments_data = package.package_data.get("deployments")
+    if old_deployments_data and contains_matching_uri(old_deployments_data, package.w3):
+        old_chain_uri = pluck_matching_uri(old_deployments_data, package.w3)
+        old_deployments_chain_data = old_deployments_data[old_chain_uri]
+        # Replace specific on-chain deployment (i.e. deployment_name)
+        new_deployments_chain_data_init = dissoc(
+            old_deployments_chain_data, deployment_name
+        )
+        new_deployments_chain_data = {
+            **new_deployments_chain_data_init,
+            **{deployment_name: deployment_data},
+        }
+        # Replace all on-chain deployments
+        new_deployments_data_init = dissoc(
+            old_deployments_data, "deployments", old_chain_uri
+        )
+        new_deployments_data = {
+            **new_deployments_data_init,
+            **{latest_block_uri: new_deployments_chain_data},
+        }
+        return assoc(package.package_data, "deployments", new_deployments_data)
+
+    return assoc_in(
+        package.package_data,
+        ("deployments", latest_block_uri, deployment_name),
+        deployment_data,
+    )
+
+
+def create_deployment_data(contract_name, new_address, tx_receipt):
+    return {
+        "contract_type": contract_name,
+        "address": to_hex(new_address),
+        "transaction": to_hex(tx_receipt.transactionHash),
+        "block": to_hex(tx_receipt.blockHash),
+    }
+
+
+def get_deployment_address(linked_type, package):
+    """
+    Return the address of a linked_type found in a package's manifest deployments.
+    """
+    try:
+        deployment_address = to_canonical_address(
+            package.deployments.get(linked_type)["address"]
+        )
+    except KeyError:
+        raise LinkerError(
+            "Package data does not contain a valid deployment of {0} on the "
+            "current w3-connected chain.".format(linked_type)
+        )
+    return deployment_address

@@ -95,13 +95,6 @@ def test_safe_math_deployer(safe_math_deployer):
     assert is_address(safe_math_address)
 
 
-# LINK REFS
-@pytest.fixture
-def escrow_deployer(solc_deployer, w3):
-    escrow_manifest_path = MANIFEST_DIR / "escrow_manifest.json"
-    return solc_deployer(escrow_manifest_path), w3
-
-
 def test_escrow_deployer_unlinked(escrow_deployer):
     deployer, w3 = escrow_deployer
     with pytest.raises(DeployerError):
