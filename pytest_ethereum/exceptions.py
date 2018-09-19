@@ -12,3 +12,11 @@ class DeployerError(PytestEthereumError):
     """
 
     pass
+
+
+class LinkerError(PytestEthereumError):
+    """
+    Raised when the Linker is unable to link two contract types.
+    """
+
+    pass
