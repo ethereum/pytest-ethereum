@@ -15,6 +15,7 @@ extras_require = {
         'black>=18.6b4,<19',
         "flake8==3.4.1",
         "isort>=4.2.15,<5",
+        "mypy<0.600",
     ],
     'doc': [
         "Sphinx>=1.6.5,<2",
