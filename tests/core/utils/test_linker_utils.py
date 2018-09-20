@@ -2,7 +2,7 @@ from eth_utils import remove_0x_prefix, to_hex
 from eth_utils.toolz import assoc
 import pytest
 
-from ethpm.utils.chains import create_block_uri, get_chain_id
+from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
 from pytest_ethereum.exceptions import LinkerError
 from pytest_ethereum.utils.linker import (
     contains_matching_uri,
@@ -13,7 +13,7 @@ from pytest_ethereum.utils.linker import (
 
 @pytest.fixture
 def chain_setup(w3):
-    old_chain_id = remove_0x_prefix(to_hex(get_chain_id(w3)))
+    old_chain_id = remove_0x_prefix(to_hex(get_genesis_block_hash(w3)))
     block_hash = remove_0x_prefix(to_hex(w3.eth.getBlock("earliest").hash))
     old_chain_uri = "blockchain://{0}/block/{1}".format(old_chain_id, block_hash)
     match_data = {
@@ -60,7 +60,7 @@ def test_insert_deployment(escrow_deployer):
         "transaction": "0x123",
         "block": "0x123",
     }
-    genesis_hash = to_hex(get_chain_id(w3))
+    genesis_hash = to_hex(get_genesis_block_hash(w3))
     w3.testing.mine(1)
     init_block_hash = to_hex(w3.eth.getBlock("latest")["hash"])
     init_block_uri = create_block_uri(genesis_hash, init_block_hash)

@@ -1,6 +1,6 @@
-from typing import Dict
+from typing import Any, Dict, Iterable, List, Tuple
 
-from eth_utils import to_canonical_address, to_hex
+from eth_utils import to_canonical_address, to_dict, to_hex, to_list
 from eth_utils.toolz import assoc, assoc_in, dissoc
 from web3 import Web3
 
@@ -9,7 +9,7 @@ from ethpm.typing import URI, Address, Manifest
 from ethpm.utils.chains import (
     check_if_chain_matches_chain_uri,
     create_block_uri,
-    get_chain_id,
+    get_genesis_block_hash,
 )
 from pytest_ethereum.exceptions import LinkerError
 from pytest_ethereum.typing import TxReceipt
@@ -45,7 +45,7 @@ def create_latest_block_uri(w3: Web3, tx_receipt: TxReceipt) -> URI:
     """
     Creates a new block uri from data in w3 and provided tx_receipt.
     """
-    chain_id = to_hex(get_chain_id(w3))
+    chain_id = to_hex(get_genesis_block_hash(w3))
     block_hash = to_hex(tx_receipt.blockHash)
     return create_block_uri(chain_id, block_hash)
 
@@ -90,15 +90,29 @@ def insert_deployment(
     )
 
 
+@to_dict
 def create_deployment_data(
-    contract_name: str, new_address: Address, tx_receipt: TxReceipt
-) -> Dict[str, str]:
-    return {
-        "contract_type": contract_name,
-        "address": to_hex(new_address),
-        "transaction": to_hex(tx_receipt.transactionHash),
-        "block": to_hex(tx_receipt.blockHash),
-    }
+    contract_name: str,
+    new_address: Address,
+    tx_receipt: TxReceipt,
+    link_refs: List[Dict[str, Any]] = None,
+) -> Iterable[Tuple[str, Any]]:
+    yield "contract_type", contract_name
+    yield "address", to_hex(new_address)
+    yield "transaction", to_hex(tx_receipt.transactionHash)
+    yield "block", to_hex(tx_receipt.blockHash)
+    if link_refs:
+        yield "runtime_bytecode", {"link_dependencies": create_link_dep(link_refs)}
+
+
+@to_list
+def create_link_dep(link_refs: List[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
+    for link_ref in link_refs:
+        yield {
+            "offsets": link_ref["offsets"],
+            "type": "reference",
+            "value": link_ref["name"],
+        }
 
 
 def get_deployment_address(linked_type: str, package: Package) -> Address:
