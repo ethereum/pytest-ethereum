@@ -1,8 +1,11 @@
+from typing import Any, Callable, Tuple
+
 import cytoolz
 from eth_utils import to_canonical_address, to_hex
 from eth_utils.toolz import assoc_in, pipe
 
 from ethpm import Package
+from ethpm.typing import Address
 from pytest_ethereum.exceptions import LinkerError
 from pytest_ethereum.utils.linker import (
     create_deployment_data,
@@ -12,16 +15,16 @@ from pytest_ethereum.utils.linker import (
 )
 
 
-def linker(*args):
+def linker(*args: Callable[..., Any]) -> Callable[..., Any]:
     return _linker(args)
 
 
 @cytoolz.curry
-def _linker(operations, package):
+def _linker(operations: Callable[..., Any], package: Package) -> Callable[..., Package]:
     return pipe(package, *operations)
 
 
-def deploy(contract_name, *args):
+def deploy(contract_name: str, *args: Any) -> Callable[..., Tuple[Package, Address]]:
     """
     Return a newly created package and contract address.
     Will deploy the given contract_name, if data exists in package. If
@@ -32,7 +35,7 @@ def deploy(contract_name, *args):
 
 
 @cytoolz.curry
-def _deploy(contract_name, args, package):
+def _deploy(contract_name: str, args: Any, package: Package) -> Tuple[Package, Address]:
     deployments = package.deployments
     if contract_name in deployments:
         return package, package.deployments[contract_name].address
@@ -52,7 +55,9 @@ def _deploy(contract_name, args, package):
 
 
 @cytoolz.curry
-def link(contract, linked_type, package_data):
+def link(
+    contract: str, linked_type: str, package_data: Tuple[Package, Address]
+) -> Package:
     """
     Return a new package, created with a new manifest after applying the linked type
     reference to the contract factory.

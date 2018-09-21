@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 from eth_utils import to_dict, to_hex, to_tuple
 import pytest
@@ -8,11 +9,12 @@ from web3 import Web3
 
 from ethpm import Package
 from ethpm.tools import builder as b
+from ethpm.typing import Manifest
 from pytest_ethereum.deployer import Deployer
 
 
 @pytest.fixture
-def w3():
+def w3() -> Web3:
     w3 = Web3(Web3.EthereumTesterProvider())
     return w3
 
@@ -22,7 +24,7 @@ SOURCES_GLOB = "**/*.vy"
 
 
 @pytest.fixture
-def manifest():
+def manifest() -> Manifest:
     if not CONTRACTS_DIR.is_dir():
         raise FileNotFoundError("no contracts_dir")
     all_sources = CONTRACTS_DIR.glob(SOURCES_GLOB)
@@ -42,21 +44,23 @@ def manifest():
 
 
 @to_tuple
-def generate_inline_sources(compiler_output):
+def generate_inline_sources(compiler_output: Dict[str, Any]) -> Iterable[Manifest]:
     for path in compiler_output.keys():
         contract_type = path.split("/")[-1].split(".")[0]
         yield b.inline_source(contract_type, compiler_output)
 
 
 @to_tuple
-def generate_contract_types(compiler_output):
+def generate_contract_types(compiler_output: Dict[str, Any]) -> Iterable[Manifest]:
     for path in compiler_output.keys():
         contract_type = path.split("/")[-1].split(".")[0]
         yield b.contract_type(contract_type, compiler_output)
 
 
 @to_dict
-def generate_compiler_output(all_sources):
+def generate_compiler_output(
+    all_sources: List[Path]
+) -> Iterable[Tuple[str, Dict[str, Any]]]:
     for source in all_sources:
         contract_file = str(source).split("/")[-1]
         contract_type = contract_file.split(".")[0]
@@ -64,7 +68,7 @@ def generate_compiler_output(all_sources):
         yield str(source), {contract_type: create_raw_asset_data(source.read_text())}
 
 
-def create_raw_asset_data(source: Path):
+def create_raw_asset_data(source: str) -> Dict[str, Any]:
     return {
         "abi": compiler.mk_full_signature(source),
         "evm": {
@@ -77,19 +81,19 @@ def create_raw_asset_data(source: Path):
 
 
 @pytest.fixture
-def package(manifest, w3):
+def package(manifest: Manifest, w3: Web3) -> Package:
     return Package(manifest, w3)
 
 
 # todo squash deployers
 @pytest.fixture
-def vy_deployer(package):
+def vy_deployer(package: Package) -> Deployer:
     return Deployer(package)
 
 
 @pytest.fixture
-def solc_deployer(w3):
-    def _solc_deployer(path):
+def solc_deployer(w3: Web3) -> Callable[[Path], Deployer]:
+    def _solc_deployer(path: Path) -> Deployer:
         manifest = json.loads(path.read_text())
         package = Package(manifest, w3)
         return Deployer(package)

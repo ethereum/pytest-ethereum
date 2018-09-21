@@ -1,15 +1,21 @@
+from typing import Dict
+
 from eth_utils import to_canonical_address, to_hex
 from eth_utils.toolz import assoc, assoc_in, dissoc
+from web3 import Web3
 
+from ethpm import Package
+from ethpm.typing import URI, Address, Manifest
 from ethpm.utils.chains import (
     check_if_chain_matches_chain_uri,
     create_block_uri,
     get_chain_id,
 )
 from pytest_ethereum.exceptions import LinkerError
+from pytest_ethereum.typing import TxReceipt
 
 
-def pluck_matching_uri(deployment_data, w3):
+def pluck_matching_uri(deployment_data: Dict[str, Dict[str, str]], w3: Web3) -> URI:
     """
     Return any blockchain uri that matches w3-connected chain, if one
     is present in the deployment data keys.
@@ -24,7 +30,7 @@ def pluck_matching_uri(deployment_data, w3):
     )
 
 
-def contains_matching_uri(deployment_data, w3):
+def contains_matching_uri(deployment_data: Dict[str, Dict[str, str]], w3: Web3) -> bool:
     """
     Returns true if any blockchain uri in deployment data matches
     w3-connected chain.
@@ -35,7 +41,7 @@ def contains_matching_uri(deployment_data, w3):
     return False
 
 
-def create_latest_block_uri(w3, tx_receipt):
+def create_latest_block_uri(w3: Web3, tx_receipt: TxReceipt) -> URI:
     """
     Creates a new block uri from data in w3 and provided tx_receipt.
     """
@@ -44,7 +50,12 @@ def create_latest_block_uri(w3, tx_receipt):
     return create_block_uri(chain_id, block_hash)
 
 
-def insert_deployment(package, deployment_name, deployment_data, latest_block_uri):
+def insert_deployment(
+    package: Package,
+    deployment_name: str,
+    deployment_data: Dict[str, str],
+    latest_block_uri: URI,
+) -> Manifest:
     """
     Returns a new manifest. If a matching chain uri is found in the old manifest, it will
     update the chain uri along with the new deployment data. If no match, it will simply add
@@ -79,7 +90,9 @@ def insert_deployment(package, deployment_name, deployment_data, latest_block_ur
     )
 
 
-def create_deployment_data(contract_name, new_address, tx_receipt):
+def create_deployment_data(
+    contract_name: str, new_address: Address, tx_receipt: TxReceipt
+) -> Dict[str, str]:
     return {
         "contract_type": contract_name,
         "address": to_hex(new_address),
@@ -88,7 +101,7 @@ def create_deployment_data(contract_name, new_address, tx_receipt):
     }
 
 
-def get_deployment_address(linked_type, package):
+def get_deployment_address(linked_type: str, package: Package) -> Address:
     """
     Return the address of a linked_type found in a package's manifest deployments.
     """
