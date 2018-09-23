@@ -15,15 +15,13 @@ from pytest_ethereum.utils.linker import (
 def chain_setup(w3):
     old_chain_id = remove_0x_prefix(to_hex(get_genesis_block_hash(w3)))
     block_hash = remove_0x_prefix(to_hex(w3.eth.getBlock("earliest").hash))
-    old_chain_uri = "blockchain://{0}/block/{1}".format(old_chain_id, block_hash)
+    old_chain_uri = f"blockchain://{old_chain_id}/block/{block_hash}"
     match_data = {
         old_chain_uri: {"x": "x"},
-        "blockchain://{0}/block/{1}".format("1234", block_hash): {"x": "x"},
+        f"blockchain://1234/block/{block_hash}": {"x": "x"},
     }
     no_match_data = {
-        "blockchain://56775ac59d0774e6b603a79c4218efeb5653b99ba0ff14db983bac2662251a8a/block/{0}".format(  # noqa: E501
-            block_hash
-        ): {
+        f"blockchain://56775ac59d0774e6b603a79c4218efeb5653b99ba0ff14db983bac2662251a8a/block/{block_hash}": {  # noqa: E501
             "x": "x"
         }
     }

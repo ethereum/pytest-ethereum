@@ -10,7 +10,7 @@ class Deployer:
     def __init__(self, package: Package) -> None:
         if not isinstance(package, Package):
             raise TypeError(
-                "Expected a Package object, instead received {0}.".format(type(package))
+                f"Expected a Package object, instead received {type(package)}."
             )
         self.package = package
         self.strategies = {}  # type: Dict[str, Callable[[Package], Package]]

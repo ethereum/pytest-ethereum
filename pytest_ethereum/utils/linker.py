@@ -24,9 +24,8 @@ def pluck_matching_uri(deployment_data: Dict[str, Dict[str, str]], w3: Web3) -> 
         if check_if_chain_matches_chain_uri(w3, uri):
             return uri
     raise LinkerError(
-        "No matching blockchain URI found in deployment_data: {0}, for w3 instance: {1}.".format(
-            list(deployment_data.keys()), w3.__repr__()
-        )
+        f"No matching blockchain URI found in deployment_data: {list(deployment_data.keys())}, "
+        "for w3 instance: {w3.__repr__()}."
     )
 
 
@@ -125,7 +124,7 @@ def get_deployment_address(linked_type: str, package: Package) -> Address:
         )
     except KeyError:
         raise LinkerError(
-            "Package data does not contain a valid deployment of {0} on the "
-            "current w3-connected chain.".format(linked_type)
+            f"Package data does not contain a valid deployment of {linked_type} on the "
+            "current w3-connected chain."
         )
     return deployment_address
