@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from eth_utils import is_address
+from eth_utils import is_address, to_canonical_address
 import pytest
 import web3
 
@@ -63,6 +63,8 @@ def owned_deployer(solc_deployer):
 def test_owned_deployer(owned_deployer):
     owned_package, owned_address = owned_deployer
     assert is_address(owned_address)
+    owned_contract_instance = owned_package.deployments.get_contract_instance("Owned")
+    assert to_canonical_address(owned_contract_instance.address) == owned_address
 
 
 # CONSTRUCTOR ARGS
