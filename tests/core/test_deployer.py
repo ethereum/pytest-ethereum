@@ -5,6 +5,7 @@ from eth_utils import is_address, to_canonical_address
 import pytest
 import web3
 
+from ethpm import ASSETS_DIR
 from pytest_ethereum.deployer import Deployer
 from pytest_ethereum.exceptions import DeployerError
 
@@ -55,7 +56,7 @@ MANIFEST_DIR = Path(__file__).parent.parent / "manifests"
 # SIMPLE
 @pytest.fixture
 def owned_deployer(solc_deployer):
-    owned_manifest_path = MANIFEST_DIR / "owned_manifest.json"
+    owned_manifest_path = ASSETS_DIR / "owned" / "1.0.1.json"
     owned_deployer = solc_deployer(path=owned_manifest_path)
     return owned_deployer.deploy("Owned")
 
@@ -70,7 +71,7 @@ def test_owned_deployer(owned_deployer):
 # CONSTRUCTOR ARGS
 @pytest.fixture
 def standard_token_deployer(solc_deployer):
-    standard_token_manifest_path = MANIFEST_DIR / "standard_token_manifest.json"
+    standard_token_manifest_path = ASSETS_DIR / "standard-token" / "1.0.1.json"
     standard_token_deployer = solc_deployer(standard_token_manifest_path)
     return standard_token_deployer.deploy("StandardToken", 100)
 
@@ -87,7 +88,7 @@ def test_standard_token_deployer(standard_token_deployer):
 # LIBRARY
 @pytest.fixture
 def safe_math_deployer(solc_deployer):
-    safe_math_manifest_path = MANIFEST_DIR / "safe_math_manifest.json"
+    safe_math_manifest_path = ASSETS_DIR / "safe-math-lib" / "1.0.1.json"
     safe_math_deployer = solc_deployer(safe_math_manifest_path)
     return safe_math_deployer.deploy("SafeMathLib")
 

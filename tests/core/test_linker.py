@@ -1,7 +1,7 @@
 from eth_utils import is_address
 import pytest
 
-from ethpm import Package
+from ethpm import ASSETS_DIR, Package
 from pytest_ethereum.deployer import Deployer
 from pytest_ethereum.exceptions import DeployerError
 from pytest_ethereum.linker import deploy, link, linker
@@ -9,7 +9,7 @@ from pytest_ethereum.linker import deploy, link, linker
 
 @pytest.fixture
 def escrow_deployer(solc_deployer, w3, manifest_dir):
-    escrow_manifest_path = manifest_dir / "escrow_manifest.json"
+    escrow_manifest_path = ASSETS_DIR / "escrow" / "1.0.3.json"
     return solc_deployer(escrow_manifest_path), w3
 
 

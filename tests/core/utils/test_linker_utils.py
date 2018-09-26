@@ -70,8 +70,8 @@ def test_insert_deployment(escrow_deployer):
     w3.testing.mine(1)
     new_block_hash = to_hex(w3.eth.getBlock("latest")["hash"])
     new_block_uri = create_block_uri(genesis_hash, new_block_hash)
-    escrow_package.package_data = assoc(
-        escrow_package.package_data, "deployments", init_block_deployment_data
+    escrow_package.manifest = assoc(
+        escrow_package.manifest, "deployments", init_block_deployment_data
     )
     updated_manifest = insert_deployment(
         escrow_package, "Escrow", new_deployment_data, new_block_uri

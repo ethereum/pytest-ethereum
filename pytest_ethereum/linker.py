@@ -81,7 +81,7 @@ def link(
     linked_factory = unlinked_factory.link_bytecode({linked_type: deployment_address})
     # todo replace runtime_bytecode in manifest
     manifest = assoc_in(
-        package.package_data,
+        package.manifest,
         ("contract_types", contract, "deployment_bytecode", "bytecode"),
         to_hex(linked_factory.bytecode),
     )
