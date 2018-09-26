@@ -60,7 +60,7 @@ def insert_deployment(
     update the chain uri along with the new deployment data. If no match, it will simply add
     the new chain uri and deployment data.
     """
-    old_deployments_data = package.package_data.get("deployments")
+    old_deployments_data = package.manifest.get("deployments")
     if old_deployments_data and contains_matching_uri(old_deployments_data, package.w3):
         old_chain_uri = pluck_matching_uri(old_deployments_data, package.w3)
         old_deployments_chain_data = old_deployments_data[old_chain_uri]
@@ -80,10 +80,10 @@ def insert_deployment(
             **new_deployments_data_init,
             **{latest_block_uri: new_deployments_chain_data},
         }
-        return assoc(package.package_data, "deployments", new_deployments_data)
+        return assoc(package.manifest, "deployments", new_deployments_data)
 
     return assoc_in(
-        package.package_data,
+        package.manifest,
         ("deployments", latest_block_uri, deployment_name),
         deployment_data,
     )
