@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from eth_utils import is_address, to_canonical_address
+from eth_utils import is_address
 import pytest
 import web3
 
@@ -34,13 +34,9 @@ def registry(vy_deployer):
 
 
 def test_user_code_with_fixture(vyper_project_dir, greeter, registry):
-    greeter_package, greeter_address = greeter
-    greeter_instance = greeter_package.get_contract_instance("Greeter", greeter_address)
+    greeter_instance = greeter.deployments.get_contract_instance("Greeter")
     assert isinstance(greeter_instance, web3.contract.Contract)
-    registry_package, registry_address = registry
-    registry_instance = registry_package.get_contract_instance(
-        "Registry", registry_address
-    )
+    registry_instance = registry.deployments.get_contract_instance("Registry")
     assert isinstance(registry_instance, web3.contract.Contract)
     greeting = greeter_instance.functions.greet().call()
     assert greeting == b"Hello"
@@ -55,47 +51,43 @@ MANIFEST_DIR = Path(__file__).parent.parent / "manifests"
 
 # SIMPLE
 @pytest.fixture
-def owned_deployer(solc_deployer):
+def owned(solc_deployer):
     owned_manifest_path = ASSETS_DIR / "owned" / "1.0.1.json"
     owned_deployer = solc_deployer(path=owned_manifest_path)
     return owned_deployer.deploy("Owned")
 
 
-def test_owned_deployer(owned_deployer):
-    owned_package, owned_address = owned_deployer
-    assert is_address(owned_address)
-    owned_contract_instance = owned_package.deployments.get_contract_instance("Owned")
-    assert to_canonical_address(owned_contract_instance.address) == owned_address
+def test_owned_deployer(owned):
+    owned_contract_instance = owned.deployments.get_contract_instance("Owned")
+    assert is_address(owned_contract_instance.address)
 
 
 # CONSTRUCTOR ARGS
 @pytest.fixture
-def standard_token_deployer(solc_deployer):
+def standard_token(solc_deployer):
     standard_token_manifest_path = ASSETS_DIR / "standard-token" / "1.0.1.json"
     standard_token_deployer = solc_deployer(standard_token_manifest_path)
     return standard_token_deployer.deploy("StandardToken", 100)
 
 
-def test_standard_token_deployer(standard_token_deployer):
-    standard_token_package, standard_token_address = standard_token_deployer
-    assert is_address(standard_token_address)
-    standard_token_instance = standard_token_package.get_contract_instance(
-        "StandardToken", standard_token_address
+def test_standard_token_deployer(standard_token):
+    standard_token_instance = standard_token.deployments.get_contract_instance(
+        "StandardToken"
     )
     assert standard_token_instance.functions.totalSupply().call() == 100
 
 
 # LIBRARY
 @pytest.fixture
-def safe_math_deployer(solc_deployer):
+def safe_math(solc_deployer):
     safe_math_manifest_path = ASSETS_DIR / "safe-math-lib" / "1.0.1.json"
     safe_math_deployer = solc_deployer(safe_math_manifest_path)
     return safe_math_deployer.deploy("SafeMathLib")
 
 
-def test_safe_math_deployer(safe_math_deployer):
-    _, safe_math_address = safe_math_deployer
-    assert is_address(safe_math_address)
+def test_safe_math_deployer(safe_math):
+    safe_math_instance = safe_math.deployments.get_contract_instance("SafeMathLib")
+    assert is_address(safe_math_instance.address)
 
 
 def test_escrow_deployer_unlinked(escrow_deployer):
