@@ -102,3 +102,28 @@ For example, the `Escrow` contract factory requires linking to an instance of th
        deployer.register_strategy("Escrow", escrow_strategy)
        linked_escrow_package, _ = deployer.deploy("Escrow") 
        return linked_escrow_package.deployments.get_deployment("Escrow")
+
+
+Log
+---
+
+The ``Log`` class is available to help with testing for contract events, and the contents of the emitted logs.
+
+
+``tests/fixtures/ping.vy``
+
+.. include:: ../tests/fixtures/ping.vy
+   :code: python
+
+
+.. code:: python
+
+   # SETUP
+   ping_deployer = vy_deployer.deploy("ping")
+   ping_instance = ping_deployer.deployments.get_contract_instance("ping")
+   tx_hash = ping.functions.ping(b"one", b"two")
+   receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+
+
+.. autoclass:: pytest_ethereum.testing.Log
+   :members: is_present, not_present, exact_match

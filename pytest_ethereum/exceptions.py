@@ -20,3 +20,11 @@ class LinkerError(PytestEthereumError):
     """
 
     pass
+
+
+class LogError(PytestEthereumError):
+    """
+    Raised when the Log class is instantiated with invalid arguments.
+    """
+
+    pass
