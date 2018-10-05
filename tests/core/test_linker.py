@@ -1,4 +1,3 @@
-from eth_utils import is_address
 import pytest
 
 from ethpm import ASSETS_DIR, Package
@@ -27,9 +26,7 @@ def test_linker(escrow_deployer):
     )
     assert hasattr(escrow_strategy, "__call__")
     deployer.register_strategy("Escrow", escrow_strategy)
-    escrow_deployer = deployer.deploy("Escrow")
-    linked_escrow_package, escrow_address = escrow_deployer
+    linked_escrow_package = deployer.deploy("Escrow")
     assert isinstance(linked_escrow_package, Package)
-    assert is_address(escrow_address)
     linked_escrow_factory = linked_escrow_package.get_contract_factory("Escrow")
     assert linked_escrow_factory.needs_bytecode_linking is False

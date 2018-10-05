@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 from eth_utils import to_dict, to_hex, to_tuple
 import pytest
@@ -21,6 +21,7 @@ def w3() -> Web3:
 
 CONTRACTS_DIR = Path("./contracts")
 SOURCES_GLOB = "**/*.vy"
+TWIG_GLOB = "**/*.v.py"
 
 
 @pytest.fixture
@@ -35,6 +36,23 @@ def manifest() -> Manifest:
         {},
         b.package_name("greeter"),
         b.version("1.0.0"),
+        b.manifest_version("2"),
+        *composed_inline_sources,
+        *composed_contract_types,
+        b.validate(),
+    )
+    return manifest
+
+
+def twig_manifest(path: Path, name: str, version: str) -> Manifest:
+    all_sources = path.glob(TWIG_GLOB)
+    compiler_output = generate_compiler_output(all_sources)
+    composed_contract_types = generate_contract_types(compiler_output)
+    composed_inline_sources = generate_inline_sources(compiler_output)
+    manifest = b.build(
+        {},
+        b.package_name(name),
+        b.version(version),
         b.manifest_version("2"),
         *composed_inline_sources,
         *composed_contract_types,
@@ -89,6 +107,18 @@ def package(manifest: Manifest, w3: Web3) -> Package:
 @pytest.fixture
 def vy_deployer(package: Package) -> Deployer:
     return Deployer(package)
+
+
+@pytest.fixture
+def twig_deployer(w3: Web3) -> Callable[[Path, str, str], Deployer]:
+    def _twig_deployer(
+        path: Path, name: Optional[str] = "twig", version: Optional[str] = "1.0.0"
+    ) -> Deployer:
+        manifest = twig_manifest(path, name, version)
+        pkg = Package(manifest, w3)
+        return Deployer(pkg)
+
+    return _twig_deployer
 
 
 @pytest.fixture

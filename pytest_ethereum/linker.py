@@ -59,18 +59,15 @@ def _deploy(contract_name: str, args: Any, package: Package) -> Tuple[Package, A
     manifest = insert_deployment(
         package, contract_name, deployment_data, latest_block_uri
     )
-    return Package(manifest, package.w3), address
+    return Package(manifest, package.w3)
 
 
 @cytoolz.curry
-def link(
-    contract: str, linked_type: str, package_data: Tuple[Package, Address]
-) -> Package:
+def link(contract: str, linked_type: str, package: Package) -> Package:
     """
     Return a new package, created with a new manifest after applying the linked type
     reference to the contract factory.
     """
-    package, _ = package_data
     deployment_address = get_deployment_address(linked_type, package)
     unlinked_factory = package.get_contract_factory(contract)
     if not unlinked_factory.needs_bytecode_linking:
