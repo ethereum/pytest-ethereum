@@ -4,6 +4,7 @@ from eth_tester.exceptions import TransactionFailed
 import pytest
 from web3.contract import ContractEvent
 
+from pytest_ethereum._utils.abi import merge_args_and_kwargs
 from pytest_ethereum.exceptions import LogError
 
 TxReceipt = Dict[str, Any]
@@ -18,25 +19,27 @@ class Log:
         and the contents of the emitted logs.
         """
         self.event = contract_event()
-        self.args = args
+        try:
+            self.args = merge_args_and_kwargs(self.event.abi, args, kwargs=kwargs)
+        except TypeError:
+            raise LogError("Invalid args/kwargs provided in Log constructor.")
         self.kwargs = kwargs
 
     def is_present(self, receipt: TxReceipt) -> bool:
         """
-        Asserts that *every* member of ``args`` is present in the emitted log dictionary values.
-        Requires ``*args``, and does not accept ``*kwargs``.
+        Asserts that *every* member of ``args`` / ``kwargs`` is present in the emitted
+        log dictionary values.
 
         .. code:: python
 
            assert Log(ping.events.Ping, b"one").is_present(receipt)
+           assert Log(ping.events.Ping, first=b"one").is_present(receipt)
+           assert Log(ping.events.Ping, first=b"one", second=b"two").is_present(receipt)
            assert Log(ping.events.Ping, b"missing").is_present(receipt) is False
+           assert Log(ping.events.Ping, second=b"one").is_present(receipt) is False
            assert Log(ping.events.Ping, b"one", b"missing").is_present(receipt) is False
 
         """
-        if self.kwargs or not self.args:
-            raise LogError(
-                "Log.is_present() requires variable args, and cannot be used with kwargs."
-            )
         logs = self._process_receipt(receipt)
         missing_args = [arg for arg in self.args if arg not in logs.values()]
         if missing_args:
@@ -45,19 +48,17 @@ class Log:
 
     def not_present(self, receipt: TxReceipt) -> bool:
         """
-        Asserts that *every* member of ``args`` are *not* present in the emitted log dictionary
-        values. Requires ``*args``, and does not accept ``*kwargs``.
+        Asserts that *every* member of ``args`` / ``kwargs`` are *not* present in the
+        emitted log dictionary values.
 
         .. code:: python
 
            assert Log(ping.events.Ping, b"missing").not_present(receipt)
+           assert Log(ping.events.Ping, first=b"missing").not_present(receipt)
            assert Log(ping.events.Ping, b"one").not_present(receipt) is False
+           assert Log(ping.events.Ping, first=b"one").not_present(receipt) is False
            assert Log(ping.events.Ping, b"one", b"missing").not_present(receipt) is False
         """
-        if self.kwargs or not self.args:
-            raise LogError(
-                "Log.not_present() requires variable args, and cannot be used with kwargs."
-            )
         logs = self._process_receipt(receipt)
         matching_args = [arg for arg in self.args if arg in logs.values()]
         if matching_args:
@@ -75,14 +76,12 @@ class Log:
            assert Log(ping.events.Ping, first=b"one").exact_match(receipt) is False
            assert Log(ping.events.Ping, first=b"not_present").exact_match(receipt) is False
         """
-        if self.args or not self.kwargs:
+        if not self.kwargs:
             raise LogError(
-                "Log.match() requires variable kwargs, and cannot be used with args."
+                "Log().exact_match() requires keyword arguments to test an exact match."
             )
-        logs = self._process_receipt(receipt)
 
-        if any(kwarg not in logs.keys() for kwarg in self.kwargs):
-            raise LogError("Kwargs found which are not present in event signature.")
+        logs = self._process_receipt(receipt)
 
         if self.kwargs != logs:
             return False

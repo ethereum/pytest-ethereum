@@ -3,12 +3,12 @@ from eth_utils.toolz import assoc
 import pytest
 
 from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
-from pytest_ethereum.exceptions import LinkerError
-from pytest_ethereum.utils.linker import (
+from pytest_ethereum._utils.linker import (
     contains_matching_uri,
     insert_deployment,
     pluck_matching_uri,
 )
+from pytest_ethereum.exceptions import LinkerError
 
 
 @pytest.fixture

@@ -6,13 +6,13 @@ from eth_utils.toolz import assoc_in, pipe
 
 from ethpm import Package
 from ethpm.typing import Address
-from pytest_ethereum.exceptions import LinkerError
-from pytest_ethereum.utils.linker import (
+from pytest_ethereum._utils.linker import (
     create_deployment_data,
     create_latest_block_uri,
     get_deployment_address,
     insert_deployment,
 )
+from pytest_ethereum.exceptions import LinkerError
 
 
 def linker(*args: Callable[..., Any]) -> Callable[..., Any]:
