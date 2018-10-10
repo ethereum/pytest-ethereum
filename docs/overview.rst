@@ -121,7 +121,7 @@ The ``Log`` class is available to help with testing for contract events, and the
    # SETUP
    ping_deployer = vy_deployer.deploy("ping")
    ping_instance = ping_deployer.deployments.get_contract_instance("ping")
-   tx_hash = ping.functions.ping(b"one", b"two")
+   tx_hash = ping_instance.functions.ping(b"one", b"two")
    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
 
 
