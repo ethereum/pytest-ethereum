@@ -15,7 +15,9 @@ class Deployer:
         self.package = package
         self.strategies = {}  # type: Dict[str, Callable[[Package], Package]]
 
-    def deploy(self, contract_type: str, *args: Any) -> Tuple[Package, Address]:
+    def deploy(
+        self, contract_type: str, *args: Any, **kwargs: Any
+    ) -> Tuple[Package, Address]:
         factory = self.package.get_contract_factory(contract_type)
         if contract_type in self.strategies:
             strategy = self.strategies[contract_type]
@@ -25,7 +27,7 @@ class Deployer:
                 "Unable to deploy an unlinked factory. "
                 "Please register a strategy for this contract type."
             )
-        strategy = linker(deploy(contract_type, *args))
+        strategy = linker(deploy(contract_type, *args, **kwargs))
         return strategy(self.package)
 
     def register_strategy(

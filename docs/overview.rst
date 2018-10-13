@@ -59,7 +59,11 @@ To deploy any of the available `contract types` onto the default ``w3`` instance
 
 .. py:method:: Deployer.deploy(contract_type)
 
-   Deploys an instance of given `contract_type` if sufficient data is present in the manifest.
+   Deploys an instance of given `contract_type` if sufficient data is present in the manifest. To add transaction kwargs (i.e. "from"), pass them in as a dict to the ``transaction`` keyword.
+
+.. code:: python
+
+   deploy("Contract", arg1, transaction={"from": web3.eth.accounts[1]})
 
 .. py:method:: Deployer.register_strategy(contract_type, strategy)
 

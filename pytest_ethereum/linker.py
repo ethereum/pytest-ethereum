@@ -1,4 +1,4 @@
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Dict, Tuple
 
 import cytoolz
 from eth_utils import to_canonical_address, to_hex
@@ -24,22 +24,22 @@ def _linker(operations: Callable[..., Any], package: Package) -> Callable[..., P
     return pipe(package, *operations)
 
 
-def deploy(contract_name: str, *args: Any) -> Callable[..., Tuple[Package, Address]]:
+def deploy(
+    contract_name: str, *args: Any, transaction: Dict[str, Any] = None
+) -> Callable[..., Tuple[Package, Address]]:
     """
     Return a newly created package and contract address.
     Will deploy the given contract_name, if data exists in package. If
     a deployment is found on the current w3 instance, it will return that deployment
     rather than creating a new instance.
     """
-    return _deploy(contract_name, args)
+    return _deploy(contract_name, args, transaction)
 
 
 @cytoolz.curry
-def _deploy(contract_name: str, args: Any, package: Package) -> Tuple[Package, Address]:
-    deployments = package.deployments
-    if contract_name in deployments:
-        return package, package.deployments[contract_name].address
-
+def _deploy(
+    contract_name: str, args: Any, transaction: Dict[str, Any], package: Package
+) -> Tuple[Package, Address]:
     # Deploy new instance
     factory = package.get_contract_factory(contract_name)
     if not factory.runtime_link_refs and factory.deployment_link_refs:
@@ -48,7 +48,7 @@ def _deploy(contract_name: str, args: Any, package: Package) -> Tuple[Package, A
             "necessary to populate manifest deployments that have a link reference. If using the "
             "builder tool, use `contract_type(..., runtime_bytecode=True)`."
         )
-    tx_hash = factory.constructor(*args).transact()
+    tx_hash = factory.constructor(*args).transact(transaction)
     tx_receipt = package.w3.eth.waitForTransactionReceipt(tx_hash)
     address = to_canonical_address(tx_receipt.contractAddress)
     # Create manifest copy with new deployment instance

@@ -49,7 +49,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "eth-utils>=1,<2",
-        "ethpm==0.1.3a7",
+        "ethpm==0.1.3a9",
         "web3[tester]==4.4.1",
         "vyper>=0.1.0b2,<1",
     ],

@@ -30,3 +30,16 @@ def test_linker(escrow_deployer):
     assert isinstance(linked_escrow_package, Package)
     linked_escrow_factory = linked_escrow_package.get_contract_factory("Escrow")
     assert linked_escrow_factory.needs_bytecode_linking is False
+
+
+def test_linker_with_from(escrow_deployer):
+    deployer, w3 = escrow_deployer
+    escrow_strategy = linker(
+        deploy("SafeSendLib"),
+        link("Escrow", "SafeSendLib"),
+        deploy("Escrow", w3.eth.accounts[0], transaction={"from": w3.eth.accounts[5]}),
+    )
+    deployer.register_strategy("Escrow", escrow_strategy)
+    linked_escrow_package = deployer.deploy("Escrow")
+    escrow_instance = linked_escrow_package.deployments.get_instance("Escrow")
+    assert escrow_instance.functions.sender().call() == w3.eth.accounts[5]

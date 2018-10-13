@@ -34,9 +34,9 @@ def registry(vy_deployer):
 
 
 def test_user_code_with_fixture(vyper_project_dir, greeter, registry):
-    greeter_instance = greeter.deployments.get_contract_instance("Greeter")
+    greeter_instance = greeter.deployments.get_instance("Greeter")
     assert isinstance(greeter_instance, web3.contract.Contract)
-    registry_instance = registry.deployments.get_contract_instance("Registry")
+    registry_instance = registry.deployments.get_instance("Registry")
     assert isinstance(registry_instance, web3.contract.Contract)
     greeting = greeter_instance.functions.greet().call()
     assert greeting == b"Hello"
@@ -58,7 +58,7 @@ def owned(solc_deployer):
 
 
 def test_owned_deployer(owned):
-    owned_contract_instance = owned.deployments.get_contract_instance("Owned")
+    owned_contract_instance = owned.deployments.get_instance("Owned")
     assert is_address(owned_contract_instance.address)
 
 
@@ -71,9 +71,7 @@ def standard_token(solc_deployer):
 
 
 def test_standard_token_deployer(standard_token):
-    standard_token_instance = standard_token.deployments.get_contract_instance(
-        "StandardToken"
-    )
+    standard_token_instance = standard_token.deployments.get_instance("StandardToken")
     assert standard_token_instance.functions.totalSupply().call() == 100
 
 
@@ -86,7 +84,7 @@ def safe_math(solc_deployer):
 
 
 def test_safe_math_deployer(safe_math):
-    safe_math_instance = safe_math.deployments.get_contract_instance("SafeMathLib")
+    safe_math_instance = safe_math.deployments.get_instance("SafeMathLib")
     assert is_address(safe_math_instance.address)
 
 

@@ -2,7 +2,6 @@ import logging
 
 import pytest
 
-from pytest_ethereum.exceptions import LogError
 from pytest_ethereum.testing import Log
 
 logging.getLogger("evm").setLevel(logging.INFO)
@@ -11,7 +10,7 @@ logging.getLogger("evm").setLevel(logging.INFO)
 @pytest.fixture
 def ping_setup(vyper_project_dir, vy_deployer, w3):
     ping_deployer = vy_deployer.deploy("ping")
-    ping = ping_deployer.deployments.get_contract_instance("ping")
+    ping = ping_deployer.deployments.get_instance("ping")
     tx_hash = ping.functions.ping(b"1", b"2").transact()
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     return ping, receipt
@@ -43,7 +42,7 @@ def test_log_is_present_raises_exception_with_invalid_args_kwargs(
     ping_setup, args, kwargs
 ):
     ping, receipt = ping_setup
-    with pytest.raises(LogError):
+    with pytest.raises(TypeError):
         Log(ping.events.Ping, *args, **kwargs).is_present(receipt)
 
 
@@ -62,7 +61,7 @@ def test_log_exact_match_raises_exception_with_invalid_args_kwargs(
     ping_setup, args, kwargs
 ):
     ping, receipt = ping_setup
-    with pytest.raises(LogError):
+    with pytest.raises(TypeError):
         Log(ping.events.Ping, *args, **kwargs).exact_match(receipt)
 
 
@@ -71,7 +70,7 @@ def test_log_exact_match_raises_exception_with_invalid_args_kwargs(
 )
 def test_invalid_keywords_raise_exception_on_log_instantiation(ping_setup, kwargs):
     ping, receipt = ping_setup
-    with pytest.raises(LogError):
+    with pytest.raises(TypeError):
         Log(ping.events.Ping, **kwargs)
 
 
@@ -92,5 +91,5 @@ def test_log_not_present_raises_exception_with_invalid_args_kwargs(
     ping_setup, args, kwargs
 ):
     ping, receipt = ping_setup
-    with pytest.raises(LogError):
+    with pytest.raises(TypeError):
         Log(ping.events.Ping, *args, **kwargs).not_present(receipt)
