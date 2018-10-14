@@ -59,7 +59,11 @@ To deploy any of the available `contract types` onto the default ``w3`` instance
 
 .. py:method:: Deployer.deploy(contract_type)
 
-   Deploys an instance of given `contract_type` if sufficient data is present in the manifest.
+   Deploys an instance of given `contract_type` if sufficient data is present in the manifest. To add transaction kwargs (i.e. "from"), pass them in as a dict to the ``transaction`` keyword.
+
+.. code:: python
+
+   deploy("Contract", arg1, transaction={"from": web3.eth.accounts[1]})
 
 .. py:method:: Deployer.register_strategy(contract_type, strategy)
 
@@ -121,7 +125,7 @@ The ``Log`` class is available to help with testing for contract events, and the
    # SETUP
    ping_deployer = vy_deployer.deploy("ping")
    ping_instance = ping_deployer.deployments.get_contract_instance("ping")
-   tx_hash = ping.functions.ping(b"one", b"two")
+   tx_hash = ping_instance.functions.ping(b"one", b"two")
    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
 
 

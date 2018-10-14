@@ -5,7 +5,6 @@ import pytest
 from web3.contract import ContractEvent
 
 from pytest_ethereum._utils.abi import merge_args_and_kwargs
-from pytest_ethereum.exceptions import LogError
 
 TxReceipt = Dict[str, Any]
 
@@ -19,10 +18,7 @@ class Log:
         and the contents of the emitted logs.
         """
         self.event = contract_event()
-        try:
-            self.args = merge_args_and_kwargs(self.event.abi, args, kwargs=kwargs)
-        except TypeError:
-            raise LogError("Invalid args/kwargs provided in Log constructor.")
+        self.args = merge_args_and_kwargs(self.event.abi, args, kwargs=kwargs)
         self.kwargs = kwargs
 
     def is_present(self, receipt: TxReceipt) -> bool:
@@ -77,7 +73,7 @@ class Log:
            assert Log(ping.events.Ping, first=b"not_present").exact_match(receipt) is False
         """
         if not self.kwargs:
-            raise LogError(
+            raise TypeError(
                 "Log().exact_match() requires keyword arguments to test an exact match."
             )
 
