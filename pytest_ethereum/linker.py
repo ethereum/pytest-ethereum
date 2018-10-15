@@ -42,7 +42,7 @@ def _deploy(
 ) -> Tuple[Package, Address]:
     # Deploy new instance
     factory = package.get_contract_factory(contract_name)
-    if not factory.runtime_link_refs and factory.deployment_link_refs:
+    if not factory.linked_references and factory.unlinked_references:
         raise LinkerError(
             f"Contract factory: {contract_name} is missing runtime link references, which are "
             "necessary to populate manifest deployments that have a link reference. If using the "
@@ -54,7 +54,7 @@ def _deploy(
     # Create manifest copy with new deployment instance
     latest_block_uri = create_latest_block_uri(package.w3, tx_receipt)
     deployment_data = create_deployment_data(
-        contract_name, address, tx_receipt, factory.runtime_link_refs
+        contract_name, address, tx_receipt, factory.linked_references
     )
     manifest = insert_deployment(
         package, contract_name, deployment_data, latest_block_uri
