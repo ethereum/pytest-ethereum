@@ -50,7 +50,7 @@ setup(
     install_requires=[
         "eth-utils>=1,<2",
         "ethpm==0.1.3a9",
-        "web3[tester]==4.4.1",
+        'web3[tester]>=4.7,<5',
         "vyper>=0.1.0b2,<1",
     ],
     setup_requires=['setuptools-markdown'],
