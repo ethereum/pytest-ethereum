@@ -21,7 +21,6 @@ def w3() -> Web3:
 
 CONTRACTS_DIR = Path("./contracts")
 SOURCES_GLOB = "**/*.vy"
-TWIG_GLOB = "**/*.v.py"
 
 
 @pytest.fixture
@@ -45,7 +44,7 @@ def manifest() -> Manifest:
 
 
 def twig_manifest(path: Path, name: str, version: str) -> Manifest:
-    all_sources = path.glob(TWIG_GLOB)
+    all_sources = path.glob(SOURCES_GLOB)
     compiler_output = generate_compiler_output(all_sources)
     composed_contract_types = generate_contract_types(compiler_output)
     composed_inline_sources = generate_inline_sources(compiler_output)
