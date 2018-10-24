@@ -2,7 +2,11 @@ from eth_utils import remove_0x_prefix, to_hex
 from eth_utils.toolz import assoc
 import pytest
 
-from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
+from ethpm.utils.chains import (
+    create_block_uri,
+    create_block_uri_from_w3,
+    get_genesis_block_hash,
+)
 from pytest_ethereum._utils.linker import (
     contains_matching_uri,
     insert_deployment,
@@ -30,17 +34,21 @@ def chain_setup(w3):
 
 def test_pluck_matching_uri(chain_setup):
     w3, match_data, no_match_data, old_chain_uri = chain_setup
+    w3.testing.mine(1)
+    new_chain_uri = create_block_uri_from_w3(w3)
 
-    assert pluck_matching_uri(match_data, w3) == old_chain_uri
+    assert pluck_matching_uri(match_data, new_chain_uri) == old_chain_uri
     with pytest.raises(LinkerError):
-        assert pluck_matching_uri(no_match_data, w3)
+        assert pluck_matching_uri(no_match_data, new_chain_uri)
 
 
 def test_contains_matching_uri(chain_setup):
     w3, match_data, no_match_data, _ = chain_setup
+    w3.testing.mine(1)
+    new_chain_uri = create_block_uri_from_w3(w3)
 
-    assert contains_matching_uri(match_data, w3) is True
-    assert contains_matching_uri(no_match_data, w3) is False
+    assert contains_matching_uri(match_data, new_chain_uri) is True
+    assert contains_matching_uri(no_match_data, new_chain_uri) is False
 
 
 def test_insert_deployment(escrow_deployer):
@@ -74,7 +82,7 @@ def test_insert_deployment(escrow_deployer):
         escrow_package.manifest, "deployments", init_block_deployment_data
     )
     updated_manifest = insert_deployment(
-        escrow_package, "Escrow", new_deployment_data, new_block_uri
+        escrow_package.manifest, new_block_uri, "Escrow", new_deployment_data
     )
     expected_deployments_data = {
         new_block_uri: {"Other": {"x": "x"}, "Escrow": new_deployment_data},

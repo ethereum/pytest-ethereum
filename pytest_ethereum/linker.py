@@ -57,7 +57,7 @@ def _deploy(
         contract_name, address, tx_receipt, factory.linked_references
     )
     manifest = insert_deployment(
-        package, contract_name, deployment_data, latest_block_uri
+        package.manifest, latest_block_uri, contract_name, deployment_data
     )
     return Package(manifest, package.w3)
 
