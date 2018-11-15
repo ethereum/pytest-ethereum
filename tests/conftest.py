@@ -7,6 +7,8 @@ from ethpm import ASSETS_DIR
 
 BASE_FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
+pytest_plugins = ["pytest_ethereum.plugins"]
+
 
 @pytest.fixture
 def manifest_dir():

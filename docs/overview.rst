@@ -75,7 +75,7 @@ Linker
 
 If a contract factory requires linking, you must register a "strategy" for a particular contract factory with the deployer. It is up to you to design an appropriate strategy for a contract factory. 
 
-Two ``linker`` functions are made available:
+Three ``linker`` functions are made available:
 
 .. py:method:: deploy(contract_name, *args=None)
 
@@ -84,6 +84,11 @@ Two ``linker`` functions are made available:
 .. py:method:: link(contract_name, linked_type)
 
    Links a `contract_name` to a `linked_type`. The `linked_type` must have already been deployed.
+
+.. py:method:: run_python(callback_fn)
+
+   Calls any user-defined `callback_fn` on the contracts available in the active `Package`. This can be used to call specific functions on a contract if they are part of the setup. Returns the original, unmodified `Package` that was passed in.
+
 
 For example, the `Escrow` contract factory requires linking to an instance of the `SafeSendLib` before an `Escrow` contract instance can be deployed. This is how you would set up a strategy for `Escrow`
 
