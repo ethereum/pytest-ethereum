@@ -40,6 +40,7 @@ def deploy(
 def _deploy(
     contract_name: str, args: Any, transaction: Dict[str, Any], package: Package
 ) -> Tuple[Package, Address]:
+    package.w3.testing.mine(1)
     # Deploy new instance
     factory = package.get_contract_factory(contract_name)
     if not factory.linked_references and factory.unlinked_references:
@@ -83,3 +84,13 @@ def link(contract: str, linked_type: str, package: Package) -> Package:
         to_hex(linked_factory.bytecode),
     )
     return Package(manifest, package.w3)
+
+
+@cytoolz.curry
+def run_python(callback_fn: Callable[..., None], package: Package) -> Package:
+    """
+    Return the unmodified package, after performing any user-defined callback function on
+    the contracts in the package.
+    """
+    callback_fn(package)
+    return package
