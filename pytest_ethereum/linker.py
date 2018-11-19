@@ -1,11 +1,12 @@
+import logging
 from typing import Any, Callable, Dict, Tuple
 
 import cytoolz
-from eth_utils import to_canonical_address, to_hex
+from eth_utils import to_canonical_address, to_checksum_address, to_hex
 from eth_utils.toolz import assoc_in, pipe
-
 from ethpm import Package
 from ethpm.typing import Address
+
 from pytest_ethereum._utils.linker import (
     create_deployment_data,
     create_latest_block_uri,
@@ -13,6 +14,8 @@ from pytest_ethereum._utils.linker import (
     insert_deployment,
 )
 from pytest_ethereum.exceptions import LinkerError
+
+logger = logging.getLogger("pytest_ethereum.linker")
 
 
 def linker(*args: Callable[..., Any]) -> Callable[..., Any]:
@@ -60,6 +63,7 @@ def _deploy(
     manifest = insert_deployment(
         package, contract_name, deployment_data, latest_block_uri
     )
+    logger.info("%s deployed." % contract_name)
     return Package(manifest, package.w3)
 
 
@@ -83,6 +87,10 @@ def link(contract: str, linked_type: str, package: Package) -> Package:
         ("contract_types", contract, "deployment_bytecode", "bytecode"),
         to_hex(linked_factory.bytecode),
     )
+    logger.info(
+        "%s linked to %s at address %s."
+        % (contract, linked_type, to_checksum_address(deployment_address))
+    )
     return Package(manifest, package.w3)
 
 
@@ -93,4 +101,5 @@ def run_python(callback_fn: Callable[..., None], package: Package) -> Package:
     the contracts in the package.
     """
     callback_fn(package)
+    logger.info("%s python function ran." % callback_fn.__name__)
     return package
