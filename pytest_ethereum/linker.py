@@ -1,9 +1,8 @@
 import logging
 from typing import Any, Callable, Dict, Tuple
 
-import cytoolz
 from eth_utils import to_canonical_address, to_checksum_address, to_hex
-from eth_utils.toolz import assoc_in, pipe
+from eth_utils.toolz import assoc_in, curry, pipe
 from ethpm import Package
 from ethpm.typing import Address
 
@@ -22,7 +21,7 @@ def linker(*args: Callable[..., Any]) -> Callable[..., Any]:
     return _linker(args)
 
 
-@cytoolz.curry
+@curry
 def _linker(operations: Callable[..., Any], package: Package) -> Callable[..., Package]:
     return pipe(package, *operations)
 
@@ -39,7 +38,7 @@ def deploy(
     return _deploy(contract_name, args, transaction)
 
 
-@cytoolz.curry
+@curry
 def _deploy(
     contract_name: str, args: Any, transaction: Dict[str, Any], package: Package
 ) -> Tuple[Package, Address]:
@@ -67,7 +66,7 @@ def _deploy(
     return Package(manifest, package.w3)
 
 
-@cytoolz.curry
+@curry
 def link(contract: str, linked_type: str, package: Package) -> Package:
     """
     Return a new package, created with a new manifest after applying the linked type
@@ -94,7 +93,7 @@ def link(contract: str, linked_type: str, package: Package) -> Package:
     return Package(manifest, package.w3)
 
 
-@cytoolz.curry
+@curry
 def run_python(callback_fn: Callable[..., None], package: Package) -> Package:
     """
     Return the unmodified package, after performing any user-defined callback function on
