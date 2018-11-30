@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
-from eth_utils import to_dict, to_hex, to_tuple
+from eth_utils import to_dict, to_tuple
 import pytest
-from vyper import compiler
+from vyper import compile_code
 from web3 import Web3
 
 from ethpm import Package
@@ -86,14 +86,10 @@ def generate_compiler_output(
 
 
 def create_raw_asset_data(source: str) -> Dict[str, Any]:
+    out = compile_code(source, ["bytecode", "abi"])
     return {
-        "abi": compiler.mk_full_signature(source),
-        "evm": {
-            "bytecode": {
-                "object": to_hex(compiler.compile(source)),
-                "linkReferences": {},
-            }
-        },
+        "abi": out["abi"],
+        "evm": {"bytecode": {"object": out["bytecode"], "linkReferences": {}}},
     }
 
 
