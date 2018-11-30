@@ -12,9 +12,9 @@ from pytest_ethereum.exceptions import DeployerError
 logging.getLogger("evm").setLevel(logging.INFO)
 
 
-def test_deployer_fixture(request, vyper_project_dir):
+def test_deployer_fixture(request, fixtures_dir):
     deployer = request.getfixturevalue("vy_deployer")
-    assert isinstance(deployer, Deployer)
+    assert isinstance(deployer(fixtures_dir), Deployer)
 
 
 #
@@ -24,13 +24,13 @@ def test_deployer_fixture(request, vyper_project_dir):
 
 # User Code
 @pytest.fixture
-def greeter(vy_deployer):
-    return vy_deployer.deploy("Greeter")
+def greeter(vy_deployer, fixtures_dir):
+    return vy_deployer(fixtures_dir).deploy("Greeter")
 
 
 @pytest.fixture
-def registry(vy_deployer):
-    return vy_deployer.deploy("Registry")
+def registry(vy_deployer, fixtures_dir):
+    return vy_deployer(fixtures_dir).deploy("Registry")
 
 
 def test_user_code_with_fixture(vyper_project_dir, greeter, registry):

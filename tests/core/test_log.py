@@ -8,8 +8,8 @@ logging.getLogger("evm").setLevel(logging.INFO)
 
 
 @pytest.fixture
-def ping_setup(vyper_project_dir, vy_deployer, w3):
-    ping_deployer = vy_deployer.deploy("ping")
+def ping_setup(fixtures_dir, vy_deployer, w3):
+    ping_deployer = vy_deployer(fixtures_dir).deploy("ping")
     ping = ping_deployer.deployments.get_instance("ping")
     tx_hash = ping.functions.ping(b"1", b"2").transact()
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)

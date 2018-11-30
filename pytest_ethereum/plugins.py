@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Optional
 
-from eth_utils import to_dict, to_tuple
 import pytest
-from vyper import compile_code
+from twig.backends.vyper import VyperBackend
+from twig.utils.compiler import generate_contract_types, generate_inline_sources
 from web3 import Web3
 
 from ethpm import Package
@@ -19,33 +19,17 @@ def w3() -> Web3:
     return w3
 
 
-CONTRACTS_DIR = Path("./contracts")
 SOURCES_GLOB = "**/*.vy"
 
 
-@pytest.fixture
-def manifest() -> Manifest:
-    if not CONTRACTS_DIR.is_dir():
-        raise FileNotFoundError("no contracts_dir")
-    all_sources = CONTRACTS_DIR.glob(SOURCES_GLOB)
-    compiler_output = generate_compiler_output(all_sources)
-    composed_contract_types = generate_contract_types(compiler_output)
-    composed_inline_sources = generate_inline_sources(compiler_output)
-    manifest = b.build(
-        {},
-        b.package_name("greeter"),
-        b.version("1.0.0"),
-        b.manifest_version("2"),
-        *composed_inline_sources,
-        *composed_contract_types,
-        b.validate(),
-    )
-    return manifest
-
-
-def twig_manifest(path: Path, name: str, version: str) -> Manifest:
+def vy_manifest(path: Path, name: str, version: str) -> Manifest:
+    """
+    Returns a manifest automatically containing the data for all vyper files found in the folder
+    located at `path`, and uses the provided `name` and `version`.
+    """
     all_sources = path.glob(SOURCES_GLOB)
-    compiler_output = generate_compiler_output(all_sources)
+    backend = VyperBackend()
+    compiler_output = backend.compile(all_sources)
     composed_contract_types = generate_contract_types(compiler_output)
     composed_inline_sources = generate_inline_sources(compiler_output)
     manifest = b.build(
@@ -60,56 +44,18 @@ def twig_manifest(path: Path, name: str, version: str) -> Manifest:
     return manifest
 
 
-@to_tuple
-def generate_inline_sources(compiler_output: Dict[str, Any]) -> Iterable[Manifest]:
-    for path in compiler_output.keys():
-        contract_type = path.split("/")[-1].split(".")[0]
-        yield b.inline_source(contract_type, compiler_output)
-
-
-@to_tuple
-def generate_contract_types(compiler_output: Dict[str, Any]) -> Iterable[Manifest]:
-    for path in compiler_output.keys():
-        contract_type = path.split("/")[-1].split(".")[0]
-        yield b.contract_type(contract_type, compiler_output)
-
-
-@to_dict
-def generate_compiler_output(
-    all_sources: List[Path]
-) -> Iterable[Tuple[str, Dict[str, Any]]]:
-    for source in all_sources:
-        contract_file = str(source).split("/")[-1]
-        contract_type = contract_file.split(".")[0]
-        # todo fix to accomodate multiple types in a single contract file
-        yield str(source), {contract_type: create_raw_asset_data(source.read_text())}
-
-
-def create_raw_asset_data(source: str) -> Dict[str, Any]:
-    out = compile_code(source, ["bytecode", "abi"])
-    return {
-        "abi": out["abi"],
-        "evm": {"bytecode": {"object": out["bytecode"], "linkReferences": {}}},
-    }
-
-
 @pytest.fixture
-def package(manifest: Manifest, w3: Web3) -> Package:
-    return Package(manifest, w3)
+def vy_deployer(w3: Web3) -> Callable[[Path, str, str], Deployer]:
+    """
+    Returns a `Deployer` instance composed from a `Package` instance generated from a manifest
+    that contains all of the vyper files found in the provided `path` folder. Manifest `name` and
+    `version` default to `twig` and `1.0.0` respectively, if no args are provided.
+    """
 
-
-# todo squash deployers
-@pytest.fixture
-def vy_deployer(package: Package) -> Deployer:
-    return Deployer(package)
-
-
-@pytest.fixture
-def twig_deployer(w3: Web3) -> Callable[[Path, str, str], Deployer]:
     def _twig_deployer(
         path: Path, name: Optional[str] = "twig", version: Optional[str] = "1.0.0"
     ) -> Deployer:
-        manifest = twig_manifest(path, name, version)
+        manifest = vy_manifest(path, name, version)
         pkg = Package(manifest, w3)
         return Deployer(pkg)
 
@@ -118,6 +64,11 @@ def twig_deployer(w3: Web3) -> Callable[[Path, str, str], Deployer]:
 
 @pytest.fixture
 def solc_deployer(w3: Web3) -> Callable[[Path], Deployer]:
+    """
+    Returns a `Deployer` instance composed from a `Package` instance generated from the manifest
+    located at the provided `path` folder.
+    """
+
     def _solc_deployer(path: Path) -> Deployer:
         manifest = json.loads(path.read_text())
         package = Package(manifest, w3)
