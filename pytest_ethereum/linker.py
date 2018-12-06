@@ -42,7 +42,6 @@ def deploy(
 def _deploy(
     contract_name: str, args: Any, transaction: Dict[str, Any], package: Package
 ) -> Tuple[Package, Address]:
-    package.w3.testing.mine(1)
     # Deploy new instance
     factory = package.get_contract_factory(contract_name)
     if not factory.linked_references and factory.unlinked_references:
