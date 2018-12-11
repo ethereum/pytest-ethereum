@@ -1,20 +1,13 @@
 import logging
-from pathlib import Path
 
 from eth_utils import is_address
+from ethpm import ASSETS_DIR
 import pytest
 import web3
 
-from ethpm import ASSETS_DIR
-from pytest_ethereum.deployer import Deployer
 from pytest_ethereum.exceptions import DeployerError
 
 logging.getLogger("evm").setLevel(logging.INFO)
-
-
-def test_deployer_fixture(request, fixtures_dir):
-    deployer = request.getfixturevalue("vy_deployer")
-    assert isinstance(deployer(fixtures_dir), Deployer)
 
 
 #
@@ -24,25 +17,26 @@ def test_deployer_fixture(request, fixtures_dir):
 
 # User Code
 @pytest.fixture
-def greeter(vy_deployer, fixtures_dir):
-    return vy_deployer(fixtures_dir).deploy("Greeter")
+def greeter(deployer, manifest_dir):
+    return deployer(manifest_dir / "greeter" / "1.0.0.json").deploy("greeter")
 
 
 @pytest.fixture
-def registry(vy_deployer, fixtures_dir):
-    return vy_deployer(fixtures_dir).deploy("Registry")
+def registry(deployer, manifest_dir):
+    return deployer(manifest_dir / "registry" / "1.0.0.json").deploy("registry")
 
 
-def test_user_code_with_fixture(vyper_project_dir, greeter, registry):
-    greeter_instance = greeter.deployments.get_instance("Greeter")
+def test_user_code_with_fixture(greeter, registry):
+    greeter_instance = greeter.deployments.get_instance("greeter")
+    # test registry
     assert isinstance(greeter_instance, web3.contract.Contract)
-    registry_instance = registry.deployments.get_instance("Registry")
+    registry_instance = registry.deployments.get_instance("registry")
+    assert tuple(registry_instance.functions) == ("register", "lookup")
+    # test greeter
     assert isinstance(registry_instance, web3.contract.Contract)
     greeting = greeter_instance.functions.greet().call()
     assert greeting == b"Hello"
 
-
-MANIFEST_DIR = Path(__file__).parent.parent / "manifests"
 
 #
 # Solidity Compiler Output
@@ -51,9 +45,9 @@ MANIFEST_DIR = Path(__file__).parent.parent / "manifests"
 
 # SIMPLE
 @pytest.fixture
-def owned(solc_deployer):
+def owned(deployer):
     owned_manifest_path = ASSETS_DIR / "owned" / "1.0.1.json"
-    owned_deployer = solc_deployer(path=owned_manifest_path)
+    owned_deployer = deployer(path=owned_manifest_path)
     return owned_deployer.deploy("Owned")
 
 
@@ -64,9 +58,9 @@ def test_owned_deployer(owned):
 
 # CONSTRUCTOR ARGS
 @pytest.fixture
-def standard_token(solc_deployer):
+def standard_token(deployer):
     standard_token_manifest_path = ASSETS_DIR / "standard-token" / "1.0.1.json"
-    standard_token_deployer = solc_deployer(standard_token_manifest_path)
+    standard_token_deployer = deployer(standard_token_manifest_path)
     return standard_token_deployer.deploy("StandardToken", 100)
 
 
@@ -77,9 +71,9 @@ def test_standard_token_deployer(standard_token):
 
 # LIBRARY
 @pytest.fixture
-def safe_math(solc_deployer):
+def safe_math(deployer):
     safe_math_manifest_path = ASSETS_DIR / "safe-math-lib" / "1.0.1.json"
-    safe_math_deployer = solc_deployer(safe_math_manifest_path)
+    safe_math_deployer = deployer(safe_math_manifest_path)
     return safe_math_deployer.deploy("SafeMathLib")
 
 
@@ -89,6 +83,5 @@ def test_safe_math_deployer(safe_math):
 
 
 def test_escrow_deployer_unlinked(escrow_deployer):
-    deployer, w3 = escrow_deployer
     with pytest.raises(DeployerError):
-        deployer.deploy("Escrow", w3.eth.accounts[0])
+        escrow_deployer.deploy("Escrow", escrow_deployer.package.w3.eth.accounts[0])

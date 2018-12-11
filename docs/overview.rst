@@ -8,58 +8,34 @@ Overview
 This library is designed to make deploying and testing smart contracts simple, using `Py-EthPM` and `pytest`. 
 
 
-Vyper
------
-
-This library automatically reveals a ``vy_deployer`` fixture available to compile and package your vyper contracts. The ``vy_deployer`` fixture will automatically compile all vyper contracts found in a subdirectory "contracts/" of the current working directory into a manifest according to the EthPM spec(link).
-
-
-
-
-Solidity
---------
-
-This library automatically reveals a ``solc_deployer`` fixture available to package up a given solidity manifest, expose a ``Deployer`` instance. To create a manifest (link).
-
-.. code:: python
-
-   from ethpm import Package
-
-   @pytest.fixture
-   def owned_deployer(solc_deployer):
-       owned_manifest_path = Path('to/owned/manifest.json')
-       owned_deployer = solc_deployer(path=owned_manifest_path)
-       return owned_deployer.deploy("Owned")
-
-
 Deployer
 --------
 
-A ``Deployer`` object is created to help create contract instances for any provided contracts.
+This library exposes a ``Deployer`` fixture to help create contract instances for any contract types available in the manifest that generated the ``Deployer`` instance. To create a ``Deployer`` instance, you must provide a ``pathlib.Path`` object pointing towards a valid manifest according to the `EthPM Specification <http://ethpm-spec.readthedocs.io>`__.
 
 To deploy any of the available `contract types` onto the default ``w3`` instance, simply call ``deploy`` on the deployer and a newly created ``Package`` instance (which contains the newly created contract instance in its `deployments`) will be returned, along with the address of the newly deployed contract type.
 
 .. code:: python
 
+   from pathlib import Path
    from ethpm import Package
-   from eth_utils import is_same_address
+   from eth_utils import is_address
 
    @pytest.fixture
-   def owned_deployer(solc_deployer):
+   def owned_deployer(deployer):
        owned_manifest_path = Path('to/owned/manifest.json')
-       owned_deployer = solc_deployer(path=owned_manifest_path)
-       return owned_deployer.deploy("Owned")
+       return deployer(owned_manifest_path)
 
    def test_owned_contract(owned_deployer)
-       owned_package, owned_address = owned_deployer
+       owned_package = owned_deployer.deploy("owned")
        assert isinstance(owned_package, Package) 
-       owned_contract_instance = owned_deployer.deployments.get_deployment_instance("Owned")
-       assert is_same_address(owned_contract_instance.address, owned_address)
+       owned_contract_instance = owned_package.deployments.get_deployment_instance("Owned")
+       assert is_address(owned_contract_instance.address)
 
 
 .. py:method:: Deployer.deploy(contract_type)
 
-   Deploys an instance of given `contract_type` if sufficient data is present in the manifest. To add transaction kwargs (i.e. "from"), pass them in as a dict to the ``transaction`` keyword.
+   Returns a ``Package`` instance, containing a freshly deployed instance of the given `contract_type` (if sufficient data is present in the manifest). To add transaction kwargs (i.e. "from"), pass them in as a dict to the ``transaction`` keyword.
 
 .. code:: python
 
@@ -95,21 +71,20 @@ For example, the `Escrow` contract factory requires linking to an instance of th
 .. code:: python
   
    @pytest.fixture
-   def escrow_deployer(solc_deployer, w3, manifest_dir):
+   def escrow_deployer(deployer, manifest_dir):
        escrow_manifest_path = manifest_dir / "escrow_manifest.json"
-       return solc_deployer(escrow_manifest_path), w3
+       return deployer(escrow_manifest_path)
 
 
    @pytest.fixture
-   def escrow_contract_instance(escrow_deployer):
-       deployer, w3 = escrow_deployer
+   def escrow_contract_instance(escrow_deployer, w3):
        escrow_strategy = linker(
            deploy("SafeSendLib"),
            link("Escrow", "SafeSendLib"),
            deploy("Escrow", w3.eth.accounts[0]),
        )
-       deployer.register_strategy("Escrow", escrow_strategy)
-       linked_escrow_package, _ = deployer.deploy("Escrow") 
+       escrow_deployer.register_strategy("Escrow", escrow_strategy)
+       linked_escrow_package, _ = escrow_deployer.deploy("Escrow") 
        return linked_escrow_package.deployments.get_deployment("Escrow")
 
 
@@ -121,15 +96,15 @@ The ``Log`` class is available to help with testing for contract events, and the
 
 ``tests/fixtures/ping.vy``
 
-.. include:: ../tests/fixtures/ping.vy
+.. include:: ../tests/manifests/ping/contracts/ping.vy
    :code: python
 
 
 .. code:: python
 
    # SETUP
-   ping_deployer = vy_deployer.deploy("ping")
-   ping_instance = ping_deployer.deployments.get_contract_instance("ping")
+   ping_package = deployer.deploy("ping")
+   ping_instance = ping_package.deployments.get_contract_instance("ping")
    tx_hash = ping_instance.functions.ping(b"one", b"two")
    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
 

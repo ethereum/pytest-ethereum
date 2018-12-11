@@ -2,8 +2,6 @@ from typing import Any, Dict, Iterable, List, Tuple
 
 from eth_utils import to_canonical_address, to_dict, to_hex, to_list
 from eth_utils.toolz import assoc, assoc_in, dissoc
-from web3 import Web3
-
 from ethpm import Package
 from ethpm.typing import URI, Address, Manifest
 from ethpm.utils.chains import (
@@ -11,6 +9,8 @@ from ethpm.utils.chains import (
     create_block_uri,
     get_genesis_block_hash,
 )
+from web3 import Web3
+
 from pytest_ethereum.exceptions import LinkerError
 from pytest_ethereum.typing import TxReceipt
 

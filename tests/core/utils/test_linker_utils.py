@@ -1,8 +1,8 @@
 from eth_utils import remove_0x_prefix, to_hex
 from eth_utils.toolz import assoc
+from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
 import pytest
 
-from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
 from pytest_ethereum._utils.linker import (
     contains_matching_uri,
     insert_deployment,
@@ -44,8 +44,8 @@ def test_contains_matching_uri(chain_setup):
 
 
 def test_insert_deployment(escrow_deployer):
-    deployer, w3 = escrow_deployer
-    escrow_package = deployer.package
+    w3 = escrow_deployer.package.w3
+    escrow_package = escrow_deployer.package
     init_deployment_data = {
         "contract_type": "Escrow",
         "address": "0x",
