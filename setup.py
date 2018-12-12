@@ -48,11 +48,10 @@ setup(
     url='https://github.com/ethereum/pytest-ethereum',
     include_package_data=True,
     install_requires=[
-        "eth-abi>=1.2.2,<2",
+        "eth-abi>=1.2.2,<1.3.0",
         "eth-utils>=1,<2",
         "ethpm>=0.1.4a1,<1",
         'web3[tester]>=4.7,<5',
-        "vyper>=0.1.0b5,<1",
     ],
     setup_requires=['setuptools-markdown'],
     python_requires='>=3.6, <4',
