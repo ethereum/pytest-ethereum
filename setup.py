@@ -40,7 +40,7 @@ extras_require['dev'] = (
 setup(
     name='pytest-ethereum',
     # *IMPORTANT*: Don't manually change the version here. Use `make bump`, as described in readme
-    version='0.1.3-alpha.5',
+    version='0.1.3-alpha.6',
     description="""pytest-ethereum: Pytest library for ethereum projects.""",
     long_description_markdown_filename='README.md',
     author='pytest-ethereum-contributors',
