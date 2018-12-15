@@ -7,7 +7,7 @@ from setuptools import (
 
 extras_require = {
     'test': [
-        "pytest==3.3.2",
+        "pytest>=3.6.0",
         "pytest-xdist",
         "tox>=2.9.1,<3",
     ],
@@ -48,10 +48,9 @@ setup(
     url='https://github.com/ethereum/pytest-ethereum',
     include_package_data=True,
     install_requires=[
-        "eth-abi>=1.2.2,<1.3.0",
-        "eth-utils>=1,<2",
-        "ethpm>=0.1.4a1,<1",
-        'web3[tester]>=4.7,<5',
+        "eth-utils>=1.4.0,<2.0.0",
+        "ethpm>=0.1.4a8,<1.0.0",
+        'web3[tester]>=5.0.0a1,<6.0.0',
     ],
     setup_requires=['setuptools-markdown'],
     python_requires='>=3.6, <4',
