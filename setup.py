@@ -49,8 +49,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "eth-utils>=1.4.0,<2.0.0",
-        "ethpm>=0.1.4a8,<1.0.0",
-        'web3[tester]>=5.0.0a1,<6.0.0',
+        "ethpm>=0.1.4a10,<1.0.0",
+        'web3[tester]>=5.0.0a3,<6.0.0',
     ],
     setup_requires=['setuptools-markdown'],
     python_requires='>=3.6, <4',
