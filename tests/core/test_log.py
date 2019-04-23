@@ -17,17 +17,23 @@ def ping_setup(deployer, manifest_dir):
     return ping, receipt
 
 
-def test_log_is_present(ping_setup, w3):
+@pytest.mark.parametrize(
+    "args,kwargs,expected",
+    (
+        ((b"1".ljust(32, b"\00"),), {}, True),
+        ((), {"first": b"1".ljust(32, b"\00")}, True),
+        ((), {"first": b"1".ljust(32, b"\00"), "second": b"2".ljust(32, b"\00")}, True),
+        ((b"1".ljust(32, b"\00"), b"2".ljust(32, b"\00")), {}, True),
+        ((b"1".ljust(32, b"\00"),), {"second": b"2".ljust(32, b"\00")}, True),
+        ((b"3".ljust(32, b"\00"),), {}, False),
+        ((), {"first": b"3".ljust(32, b"\00")}, False),
+        ((b"1".ljust(32, b"\00"),), {"second": b"3".ljust(32, b"\00")}, False),
+    ),
+)
+def test_log_is_present(ping_setup, w3, args, kwargs, expected):
     ping, receipt = ping_setup
     # Asserts that every arg is present in event log values
-    assert Log(ping.events.Ping, b"1").is_present(receipt)
-    assert Log(ping.events.Ping, first=b"1").is_present(receipt)
-    assert Log(ping.events.Ping, first=b"1", second=b"2").is_present(receipt)
-    assert Log(ping.events.Ping, b"1", b"2").is_present(receipt)
-    assert Log(ping.events.Ping, b"1", second=b"2").is_present(receipt)
-    assert Log(ping.events.Ping, b"3").is_present(receipt) is False
-    assert Log(ping.events.Ping, first=b"3").is_present(receipt) is False
-    assert Log(ping.events.Ping, b"1", b"3").is_present(receipt) is False
+    assert Log(ping.events.Ping, *args, **kwargs).is_present(receipt) is expected
 
 
 @pytest.mark.parametrize(
@@ -47,12 +53,18 @@ def test_log_is_present_raises_exception_with_invalid_args_kwargs(
         Log(ping.events.Ping, *args, **kwargs).is_present(receipt)
 
 
-def test_log_exact_match(ping_setup, w3):
+@pytest.mark.parametrize(
+    "args,kwargs,expected",
+    (
+        ((), {"first": b"1".ljust(32, b"\00"), "second": b"2".ljust(32, b"\00")}, True),
+        ((), {"first": b"1".ljust(32, b"\00")}, False),
+        ((), {"second": b"2".ljust(32, b"\00")}, False),
+    ),
+)
+def test_log_exact_match(ping_setup, w3, args, kwargs, expected):
     ping, receipt = ping_setup
     # Requires *kwargs, asserts that kwargs match exactly event logs
-    assert Log(ping.events.Ping, first=b"1", second=b"2").exact_match(receipt)
-    assert Log(ping.events.Ping, first=b"1").exact_match(receipt) is False
-    assert Log(ping.events.Ping, second=b"2").exact_match(receipt) is False
+    assert Log(ping.events.Ping, *args, **kwargs).exact_match(receipt) is expected
 
 
 @pytest.mark.parametrize(
@@ -75,16 +87,26 @@ def test_invalid_keywords_raise_exception_on_log_instantiation(ping_setup, kwarg
         Log(ping.events.Ping, **kwargs)
 
 
-def test_log_not_present(ping_setup, w3):
+@pytest.mark.parametrize(
+    "args,kwargs,expected",
+    (
+        ((b"y".ljust(32, b"\00"),), {}, True),
+        ((), {"first": b"y".ljust(32, b"\00")}, True),
+        ((), {"first": b"1".ljust(32, b"\00")}, False),
+        ((b"y",), {"second": b"1".ljust(32, b"\00")}, False),
+        ((b"1",), {"second": b"2".ljust(32, b"\00")}, False),
+        ((b"y",), {"second": b"1".ljust(32, b"\00")}, False),
+        (
+            (),
+            {"first": b"y".ljust(32, b"\00"), "second": b"1".ljust(32, b"\00")},
+            False,
+        ),
+    ),
+)
+def test_log_not_present(ping_setup, w3, args, kwargs, expected):
     ping, receipt = ping_setup
     # asserts that every args is not in event log values
-    assert Log(ping.events.Ping, b"y").not_present(receipt)
-    assert Log(ping.events.Ping, first=b"y").not_present(receipt)
-    assert Log(ping.events.Ping, first=b"1").not_present(receipt) is False
-    assert Log(ping.events.Ping, b"y", b"1").not_present(receipt) is False
-    assert Log(ping.events.Ping, b"1", b"2").not_present(receipt) is False
-    assert Log(ping.events.Ping, b"y", second=b"1").not_present(receipt) is False
-    assert Log(ping.events.Ping, first=b"y", second=b"1").not_present(receipt) is False
+    assert Log(ping.events.Ping, *args, **kwargs).not_present(receipt) is expected
 
 
 @pytest.mark.parametrize("args,kwargs", (((), {}), ((b"1"), {"first": b"2"})))

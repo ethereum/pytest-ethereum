@@ -78,14 +78,13 @@ class Log:
             )
 
         logs = self._process_receipt(receipt)
-
         if self.kwargs != logs:
             return False
         return True
 
     def _process_receipt(self, receipt: TxReceipt) -> Dict[str, bytes]:
         processed_receipt = self.event.processReceipt(receipt)[0]
-        return {k: v.rstrip(b"\x00") for k, v in processed_receipt["args"].items()}
+        return {k: v for k, v in processed_receipt["args"].items()}
 
 
 def tx_fail(*args: Any, **kwargs: Any) -> None:
