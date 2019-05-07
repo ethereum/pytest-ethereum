@@ -1,10 +1,10 @@
 import logging
 from typing import Any, Callable, Dict, Tuple
 
+from eth_typing import Address
 from eth_utils import to_canonical_address, to_checksum_address, to_hex
 from eth_utils.toolz import assoc_in, curry, pipe
 from ethpm import Package
-from ethpm.typing import Address
 
 from pytest_ethereum._utils.linker import (
     create_deployment_data,
