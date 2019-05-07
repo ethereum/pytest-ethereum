@@ -4,7 +4,7 @@ from eth_typing import URI, Address, Manifest
 from eth_utils import to_canonical_address, to_dict, to_hex, to_list
 from eth_utils.toolz import assoc, assoc_in, dissoc
 from ethpm import Package
-from ethpm.utils.chains import (
+from ethpm.tools.chains import (
     check_if_chain_matches_chain_uri,
     create_block_uri,
     get_genesis_block_hash,
@@ -15,7 +15,7 @@ from pytest_ethereum.exceptions import LinkerError
 from pytest_ethereum.typing import TxReceipt
 
 
-def pluck_matching_uri(deployment_data: Dict[str, Dict[str, str]], w3: Web3) -> URI:
+def pluck_matching_uri(deployment_data: Dict[URI, Dict[str, str]], w3: Web3) -> URI:
     """
     Return any blockchain uri that matches w3-connected chain, if one
     is present in the deployment data keys.
