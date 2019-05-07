@@ -1,6 +1,6 @@
 from eth_utils import remove_0x_prefix, to_hex
 from eth_utils.toolz import assoc
-from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
+from ethpm.tools.chains import create_block_uri, get_genesis_block_hash
 import pytest
 
 from pytest_ethereum._utils.linker import (
