@@ -5,8 +5,6 @@ import pytest
 
 TESTS_DIR = Path(__file__).parent
 
-pytest_plugins = ["pytest_ethereum.plugins"]
-
 
 @pytest.fixture
 def manifest_dir():

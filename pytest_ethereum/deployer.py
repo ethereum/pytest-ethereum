@@ -1,7 +1,7 @@
 from typing import Any, Callable, Dict, Tuple  # noqa: F401
 
+from eth_typing import Address
 from ethpm import Package
-from ethpm.typing import Address
 
 from pytest_ethereum.exceptions import DeployerError
 from pytest_ethereum.linker import deploy, linker
