@@ -5,10 +5,10 @@ from eth_typing import Address
 from eth_utils import to_canonical_address, to_checksum_address, to_hex
 from eth_utils.toolz import assoc_in, curry, pipe
 from ethpm import Package
+from ethpm.uri import create_latest_block_uri
 
 from pytest_ethereum._utils.linker import (
     create_deployment_data,
-    create_latest_block_uri,
     get_deployment_address,
     insert_deployment,
 )
@@ -54,7 +54,7 @@ def _deploy(
     tx_receipt = package.w3.eth.waitForTransactionReceipt(tx_hash)
     address = to_canonical_address(tx_receipt.contractAddress)
     # Create manifest copy with new deployment instance
-    latest_block_uri = create_latest_block_uri(package.w3, tx_receipt)
+    latest_block_uri = create_latest_block_uri(package.w3, 0)
     deployment_data = create_deployment_data(
         contract_name, address, tx_receipt, factory.linked_references
     )

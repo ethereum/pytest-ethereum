@@ -1,6 +1,6 @@
 from eth_utils import remove_0x_prefix, to_hex
 from eth_utils.toolz import assoc
-from ethpm.utils.chains import create_block_uri, get_genesis_block_hash
+from ethpm.uri import create_latest_block_uri
 import pytest
 
 from pytest_ethereum._utils.linker import (
@@ -13,7 +13,7 @@ from pytest_ethereum.exceptions import LinkerError
 
 @pytest.fixture
 def chain_setup(w3):
-    old_chain_id = remove_0x_prefix(to_hex(get_genesis_block_hash(w3)))
+    old_chain_id = remove_0x_prefix(to_hex(w3.eth.getBlock(0)["hash"]))
     block_hash = remove_0x_prefix(to_hex(w3.eth.getBlock("earliest").hash))
     old_chain_uri = f"blockchain://{old_chain_id}/block/{block_hash}"
     match_data = {
@@ -58,18 +58,15 @@ def test_insert_deployment(escrow_deployer):
         "transaction": "0x123",
         "block": "0x123",
     }
-    genesis_hash = to_hex(get_genesis_block_hash(w3))
     w3.testing.mine(1)
-    init_block_hash = to_hex(w3.eth.getBlock("latest")["hash"])
-    init_block_uri = create_block_uri(genesis_hash, init_block_hash)
+    init_block_uri = create_latest_block_uri(w3, 0)
     alt_block_uri = init_block_uri[:15] + "yxz123" + init_block_uri[21:]
     init_block_deployment_data = {
         init_block_uri: {"Other": {"x": "x"}, "Escrow": init_deployment_data},
         alt_block_uri: {"alt": {"x": "x"}},
     }
     w3.testing.mine(1)
-    new_block_hash = to_hex(w3.eth.getBlock("latest")["hash"])
-    new_block_uri = create_block_uri(genesis_hash, new_block_hash)
+    new_block_uri = create_latest_block_uri(w3, 0)
     escrow_package.manifest = assoc(
         escrow_package.manifest, "deployments", init_block_deployment_data
     )

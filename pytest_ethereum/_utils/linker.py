@@ -4,11 +4,7 @@ from eth_typing import URI, Address, Manifest
 from eth_utils import to_canonical_address, to_dict, to_hex, to_list
 from eth_utils.toolz import assoc, assoc_in, dissoc
 from ethpm import Package
-from ethpm.utils.chains import (
-    check_if_chain_matches_chain_uri,
-    create_block_uri,
-    get_genesis_block_hash,
-)
+from ethpm.uri import check_if_chain_matches_chain_uri
 from web3 import Web3
 
 from pytest_ethereum.exceptions import LinkerError
@@ -38,15 +34,6 @@ def contains_matching_uri(deployment_data: Dict[str, Dict[str, str]], w3: Web3) 
         if check_if_chain_matches_chain_uri(w3, uri):
             return True
     return False
-
-
-def create_latest_block_uri(w3: Web3, tx_receipt: TxReceipt) -> URI:
-    """
-    Creates a new block uri from data in w3 and provided tx_receipt.
-    """
-    chain_id = to_hex(get_genesis_block_hash(w3))
-    block_hash = to_hex(tx_receipt.blockHash)
-    return create_block_uri(chain_id, block_hash)
 
 
 def insert_deployment(
